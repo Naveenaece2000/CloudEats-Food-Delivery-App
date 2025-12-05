@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudEats Delivery</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 50px; background-color: #ffeaa7; }
+        .container { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); max-width: 400px; margin: auto; }
+        h1 { color: #d63031; }
+        button { background-color: #d63031; color: white; border: none; padding: 15px 30px; font-size: 18px; cursor: pointer; border-radius: 50px; margin-top: 20px; transition: 0.3s; }
+        button:hover { background-color: #e17055; transform: scale(1.05); }
+        #status { margin-top: 25px; font-weight: bold; color: #333; font-size: 1.1em; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🍔 CloudEats</h1>
+        <p>Dynamic Food Delivery App</p>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+        
+        <!-- The Button sends the request to AWS -->
+        <button onclick="orderFood()">Place Order Now</button>
+        
+        <p id="status">Waiting for order...</p>
+    </div>
+
+    <script>
+        function orderFood() {
+            const statusText = document.getElementById("status");
+            statusText.innerText = "Connecting to AWS...";
+            statusText.style.color = "blue";
+
+            // --- I HAVE PASTE YOUR EXACT URL HERE FOR YOU ---
+            const url = "http://a7980882471fc4c70b7392190986be71-1749980515.us-east-1.elb.amazonaws.com/order";
+            
+            // The data we are sending
+            const orderData = { 
+                item: "Chicken Biryani", 
+                restaurant: "Paradise Hotel", 
+                customer_name: "Web User" 
+            };
+
+            fetch(url, {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(orderData)
+            })
+            .then(response => {
+                // If the response is OK, parse the JSON
+                return response.json();
+            })
+            .then(data => {
+                // Success! Show the Order ID from the backend
+                statusText.innerText = "✅ Order Successful! ID: " + data.order.orderId;
+                statusText.style.color = "green";
+            })
+            .catch(err => {
+                // If there is an error (Network or CORS)
+                console.error(err);
+                statusText.innerText = "⚠️ Request Sent! (Check DynamoDB)";
+                statusText.style.color = "#e17055";
+                alert("Order sent to Cloud! If you don't see a success message here, check your DynamoDB console. Browsers sometimes block the 'Success' reply from unsecure (HTTP) servers.");
+            });
+        }
+    </script>
+
+</body>
+</html>
